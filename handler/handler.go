@@ -2,6 +2,7 @@ package handler
 
 import (
 	"encoding/json"
+	mydb "filestore-server/db"
 	"filestore-server/meta"
 	"filestore-server/util"
 	"fmt"
@@ -126,6 +127,8 @@ func FileMetaUpdataHandle(w http.ResponseWriter, r *http.Request) {
 	w.Write(data)
 }
 
+const passwd_salt = "halaMayday"
+
 //文件删除的接口
 func FileDeletaHandle(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
@@ -135,4 +138,33 @@ func FileDeletaHandle(w http.ResponseWriter, r *http.Request) {
 	os.Remove(fMeta.Location)
 	//删除索引数据
 	meta.RemoveFileMeta(fileSha1)
+}
+
+//用户注册
+func UserSignup(w http.ResponseWriter, r *http.Request) {
+	if r.Method == "GET" {
+		//返回用户注册的的html页面
+		data, err := ioutil.ReadFile("./static/view/signup.html")
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		w.Write(data)
+	} else if r.Method == "POST" {
+		r.ParseForm()
+		username := r.Form.Get("username")
+		password := r.Form.Get("password")
+		if len(username) < 3 || len(password) < 5 {
+			w.Write([]byte("Invalid parameter"))
+			return
+		}
+		curPassword := util.Sha1([]byte(password + passwd_salt))
+		suc := mydb.UserSingUp(username, curPassword)
+		if suc {
+			w.Write([]byte("SUCESS"))
+		} else {
+			w.Write([]byte("FAILED"))
+		}
+
+	}
 }
