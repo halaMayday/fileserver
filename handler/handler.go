@@ -2,7 +2,7 @@ package handler
 
 import (
 	"encoding/json"
-	mydb "filestore-server/db"
+	dblayer "filestore-server/db"
 	"filestore-server/meta"
 	"filestore-server/util"
 	"fmt"
@@ -52,11 +52,23 @@ func UploadHandler(w http.ResponseWriter, r *http.Request) {
 		fileMeta.FileSha1 = util.FileSha1(newFile)
 		//meta.UpdataFileMeta(fileMeta)
 		meta.UpdataFileMetaDB(fileMeta)
+
+		//todo:还需要更新用户文件表
+		r.ParseForm()
+		username := r.Form.Get("username")
+		suc := dblayer.OnUserFileUploadFinished(username, fileMeta.FileSha1, fileMeta.FileName, fileMeta.FileSize)
+
+		if suc {
+			http.Redirect(w, r, "/static/view/home.html", http.StatusFound)
+		} else {
+			w.Write([]byte("Upload Failed"))
+		}
 		http.Redirect(w, r, "/file/upload/suc", http.StatusFound)
 	}
 }
 
 func UploadSucHandler(w http.ResponseWriter, r *http.Request) {
+	//todo:
 	io.WriteString(w, "upload finshed")
 }
 
@@ -138,33 +150,4 @@ func FileDeletaHandle(w http.ResponseWriter, r *http.Request) {
 	os.Remove(fMeta.Location)
 	//删除索引数据
 	meta.RemoveFileMeta(fileSha1)
-}
-
-//用户注册
-func UserSignup(w http.ResponseWriter, r *http.Request) {
-	if r.Method == "GET" {
-		//返回用户注册的的html页面
-		data, err := ioutil.ReadFile("./static/view/signup.html")
-		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			return
-		}
-		w.Write(data)
-	} else if r.Method == "POST" {
-		r.ParseForm()
-		username := r.Form.Get("username")
-		password := r.Form.Get("password")
-		if len(username) < 3 || len(password) < 5 {
-			w.Write([]byte("Invalid parameter"))
-			return
-		}
-		curPassword := util.Sha1([]byte(password + passwd_salt))
-		suc := mydb.UserSingUp(username, curPassword)
-		if suc {
-			w.Write([]byte("SUCESS"))
-		} else {
-			w.Write([]byte("FAILED"))
-		}
-
-	}
 }
