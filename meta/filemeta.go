@@ -39,13 +39,13 @@ func GetFileMeta(fileSha1 string) FileMeta {
 }
 
 //获取批量的文件元信息接口 : 未全部完成
-func GetLastFileMetas(count int) []FileMeta {
+func GetLastFileMetas(count int) ([]FileMeta, error) {
 	fMetaArray := make([]FileMeta, len(fileMetas))
 	for _, v := range fileMetas {
 		fMetaArray = append(fMetaArray, v)
 	}
 	sort.Sort(ByUploadTime(fMetaArray))
-	return fMetaArray[0:count]
+	return fMetaArray[0:count], nil
 }
 
 //删除：todo 需要考虑线程同步

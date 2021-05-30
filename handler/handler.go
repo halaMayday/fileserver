@@ -10,12 +10,14 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"strconv"
 	"time"
 )
 
 func UploadHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "GET" {
-		//返回上传的的html页面
+		//返回上传的的
+		//html页面
 		data, err := ioutil.ReadFile("./static/view/upload.html")
 		if err != nil {
 			io.WriteString(w, "intelnel server error")
@@ -53,7 +55,6 @@ func UploadHandler(w http.ResponseWriter, r *http.Request) {
 		//meta.UpdataFileMeta(fileMeta)
 		meta.UpdataFileMetaDB(fileMeta)
 
-		//todo:还需要更新用户文件表
 		r.ParseForm()
 		username := r.Form.Get("username")
 		suc := dblayer.OnUserFileUploadFinished(username, fileMeta.FileSha1, fileMeta.FileName, fileMeta.FileSize)
@@ -73,11 +74,17 @@ func UploadSucHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 //获取文件元信息
-func GetFileMetahandler(w http.ResponseWriter, r *http.Request) {
+func queryFilehandler(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
-	filehash := r.Form["filehash"][0]
-	fmMeta := meta.GetFileMeta(filehash)
-	data, err := json.Marshal(fmMeta)
+	username := r.Form.Get("username")
+	limitCnt, _ := strconv.Atoi(r.Form.Get("limit"))
+	//todo:
+	userFiles, err := dblayer.QueryUserFileMetas(username, limitCnt)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	data, err := json.Marshal(userFiles)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
