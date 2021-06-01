@@ -6,7 +6,7 @@ import (
 	"fmt"
 )
 
-//文件上航船完成，信息同步到mysql数据库
+//文件上传完成，信息同步到mysql数据库
 func OnFileUploadFinshed(filehash string, filename string,
 	filesize int64, fileadr string) bool {
 	//sql脚本预编译

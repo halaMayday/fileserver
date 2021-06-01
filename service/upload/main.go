@@ -14,9 +14,10 @@ func main() {
 
 	// 文件存取接口
 	http.HandleFunc("/file/upload", handler.UploadHandler)
+	http.HandleFunc("/file/fastupload", handler.HTTPInterceptor(handler.TryFastUploadHandler))
+
 	http.HandleFunc("/file/upload/suc", handler.UploadSucHandler)
-	http.HandleFunc("/file/meta", handler.GetFileMetahandler)
-	//http.HandleFunc("/file/query", handler.FileQueryHandler)
+	http.HandleFunc("/file/query", handler.QueryFilehandler)
 	http.HandleFunc("/file/download", handler.DownloadHandler)
 	http.HandleFunc("/file/update", handler.FileMetaUpdataHandle)
 	http.HandleFunc("/file/delete", handler.FileDeletaHandle)

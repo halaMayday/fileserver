@@ -48,6 +48,7 @@
 
 <script lang="javascript">
   // $(document).ready(function () {
+  //   debugger;
   //   var upEntry = localStorage.getItem("uploadEntry");
   //   if (upEntry != "") {
   //     alert("http://" + upEntry + "/file/upload");
@@ -55,35 +56,36 @@
   //   }
   // });
 
-  // function onUpload() {
-  //   debugger;
-  //   var upUrl = "/file/upload?" + queryParams();
-  //   var upEntry = localStorage.getItem("uploadEntry");
-  //   if (upEntry != "" ) {
-  //     if (upEntry.indexOf("http:")>=0) {
-  //       upUrl = upEntry + "/file/upload?" + queryParams();
-  //     } else {
-  //       upUrl = "http://" + upEntry + "/file/upload?" + queryParams();
-  //     }
-  //   }
-  //   $.ajax({
-  //     url: upUrl,
-  //     type: 'POST',
-  //     cache: false,
-  //     data: new FormData($('#upForm')[0]),
-  //     processData: false,
-  //     contentType: false,
-  //     error: function (err) {
-  //       alert('请求报错信息: ' + JSON.stringify(err));
-  //     },
-  //     success: function (res) {
-  //       alert('请求返回结果: ' + JSON.stringify(res));
-  //       if (res.code == 0) {
-  //         window.location.href = "/static/view/home.html";
-  //       }
-  //     }
-  //   });
-  // }
+  function onUpload() {
+    debugger;
+    var upUrl = "/file/upload?" + queryParams();
+    // var upEntry = localStorage.getItem("uploadEntry");
+    // if (upEntry != "" ) {
+    //   if (upEntry.indexOf("http:")>=0) {
+    //     upUrl = upEntry + "/file/upload?" + queryParams();
+    //   } else {
+    //     upUrl = "http://" + upEntry + "/file/upload?" + queryParams();
+    //   }
+    // }
+    $.ajax({
+      url: upUrl,
+      type: 'POST',
+      cache: false,
+      data: new FormData($('#upForm')[0]),
+      processData: false,
+      contentType: false,
+      error: function (err) {
+        debugger;
+        alert('请求报错信息: ' + JSON.stringify(err));
+      },
+      success: function (res) {
+        // alert('请求返回结果: ' + JSON.stringify(res));
+        // if (res.code == 0) {
+          window.location.href = "/static/view/home.html";
+        // }
+      }
+    });
+  }
 </script>
 
 </html>
