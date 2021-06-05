@@ -94,21 +94,28 @@ func TryFastUploadHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	//4.上传过则将文件信息写入用户文件表，返回成功
-	suc := dblayer.OnUserFileUploadFinished(username, filehash, filename, int64(filesize))
+	fileSize, err := strconv.Atoi(filesize)
+	if err != nil {
+		w.Write(util.NewRespMsg(-1, "params invalid", nil).JSONBytes())
+		return
+	}
+	suc := dblayer.OnUserFileUploadFinished(username, filehash, filename, int64(fileSize))
 	respMsg := util.RespMsg{}
 	if suc {
 		respMsg = util.RespMsg{
 			Code: 0,
 			Msg:  "秒传成功",
 		}
+		w.Write(respMsg.JSONBytes())
+		return
 	} else {
 		respMsg = util.RespMsg{
 			Code: -2,
 			Msg:  "秒传失败，请稍后再试",
 		}
+		w.Write(respMsg.JSONBytes())
+		return
 	}
-	w.Write(respMsg.JSONBytes())
-	return
 }
 
 func UploadSucHandler(w http.ResponseWriter, r *http.Request) {

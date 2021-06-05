@@ -8,7 +8,7 @@ import (
 
 //文件上传完成，信息同步到mysql数据库
 func OnFileUploadFinshed(filehash string, filename string,
-	filesize int64, fileadr string) bool {
+	filesize int64, fileaddr string) bool {
 	//sql脚本预编译
 	stmt, err := mydb.DBConn().Prepare(
 		"insert ignore into tbl_file(`file_sha1`,`file_name`,`file_size`,`file_addr`,`status`)" +
@@ -19,7 +19,7 @@ func OnFileUploadFinshed(filehash string, filename string,
 	}
 	defer stmt.Close()
 	//执行sql语句
-	ret, err := stmt.Exec(filehash, filename, filesize, fileadr)
+	ret, err := stmt.Exec(filehash, filename, filesize, fileaddr)
 	if err != nil {
 		fmt.Println(err.Error())
 		return false
