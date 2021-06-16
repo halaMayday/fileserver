@@ -12,12 +12,6 @@
   <component name="ChangeListManager">
     <list default="true" id="42a9e402-7d66-4782-9233-7e4f3dea339c" name="Default Changelist" comment="feat:add method  query user's files&#10;&#10;增加：&#10;增加查询用户上传文件信息功能">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/db/file.go" beforeDir="false" afterPath="$PROJECT_DIR$/db/file.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/db/userfile.go" beforeDir="false" afterPath="$PROJECT_DIR$/db/userfile.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/handler/handler.go" beforeDir="false" afterPath="$PROJECT_DIR$/handler/handler.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/readme.md" beforeDir="false" afterPath="$PROJECT_DIR$/readme.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/service/upload/main.go" beforeDir="false" afterPath="$PROJECT_DIR$/service/upload/main.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/static/view/upload.html" beforeDir="false" afterPath="$PROJECT_DIR$/static/view/upload.html" afterDir="false" />
     </list>
     <list id="5c433eb8-d27c-4159-a38f-8da99639da62" name="feat:add method  query user's files" comment="" />
     <option name="SHOW_DIALOG" value="false" />
@@ -35,7 +29,7 @@
       </list>
     </option>
   </component>
-  <component name="GOROOT" path="/usr/local/go" />
+  <component name="GOROOT" path="$PROJECT_DIR$/../../04_go" />
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
@@ -118,9 +112,10 @@
     <integration-enabled>true</integration-enabled>
   </component>
   <component name="WindowStateProjectService">
-    <state x="760" y="477" key="#GOROOT" timestamp="1621932495649">
-      <screen x="0" y="0" width="1920" height="1080" />
+    <state x="760" y="459" key="#GOROOT" timestamp="1623393484393">
+      <screen x="0" y="0" width="1920" height="1040" />
     </state>
+    <state x="760" y="459" key="#GOROOT/0.0.1920.1040/1920.0.1920.1040@0.0.1920.1040" timestamp="1623393484393" />
     <state x="760" y="477" key="#GOROOT/0.0.1920.1080@0.0.1920.1080" timestamp="1621932495649" />
     <state x="594" y="225" key="#Inspections" timestamp="1622352861964">
       <screen x="0" y="0" width="1920" height="1080" />
@@ -253,12 +248,12 @@
       <breakpoints>
         <line-breakpoint enabled="true" type="DlvLineBreakpoint">
           <url>file://$PROJECT_DIR$/handler/handler.go</url>
-          <line>59</line>
+          <line>135</line>
           <option name="timeStamp" value="46" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="DlvLineBreakpoint">
           <url>file://$PROJECT_DIR$/handler/handler.go</url>
-          <line>58</line>
+          <line>133</line>
           <option name="timeStamp" value="47" />
         </line-breakpoint>
       </breakpoints>
