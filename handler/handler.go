@@ -5,6 +5,7 @@ import (
 	dblayer "filestore-server/db"
 	"filestore-server/meta"
 	"filestore-server/store/ceph"
+	"filestore-server/store/oss"
 	"filestore-server/util"
 	"fmt"
 	"io"
@@ -220,4 +221,15 @@ func FileDeletaHandle(w http.ResponseWriter, r *http.Request) {
 	os.Remove(fMeta.Location)
 	//删除索引数据
 	meta.RemoveFileMeta(fileSha1)
+}
+
+func DownloadURLHandler(w http.ResponseWriter, r *http.Request) {
+	r.ParseForm()
+	filehash := r.Form.Get("filehash")
+	//TODO:判断文件是存在于ceph还是oss
+
+	//从文件表中查询记录
+	row, _ := dblayer.GetFileMeta(filehash)
+	singedURL := oss.DownloadURL(row.FileAddr.String)
+	w.Write([]byte(singedURL))
 }

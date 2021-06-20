@@ -21,6 +21,7 @@ func main() {
 	http.HandleFunc("/file/download", handler.HTTPInterceptor(handler.DownloadHandler))
 	http.HandleFunc("/file/update", handler.HTTPInterceptor(handler.FileMetaUpdataHandle))
 	http.HandleFunc("/file/delete", handler.HTTPInterceptor(handler.FileDeletaHandle))
+	http.HandleFunc("/file/downloadurl", handler.HTTPInterceptor(handler.DownloadHandler))
 
 	// 用户相关接口
 	//http.HandleFunc("/", handler.SignInHandler)

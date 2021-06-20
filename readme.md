@@ -14,7 +14,24 @@
     todo:需要补充文件断点上传的基本原理
     第七章:ceph
     ceph的开发已经完成。但是还没有用docker去部署ceph，也没有进行测试
+    第八章：OSS
+    使用的是阿里云的oss。环境可以用minio代替。
+            TODO：可以增加一个功能，实现客户端直传OSS
+    第九章：RbbitMQ
+    基本概念：
+        Exchange:消息交换机，决定消息按什么规则，路由到哪个队列
+        Queue：消息载体，每个消息都会被投放到一个或者多个队列
+        Binding：绑定，把exchange和queue按照路由规则绑定起来
+        Routing Key:路由关键字，exchange根据这关键字来投递消息
+        Channel:消息通道，客户端的每个链接建立多个channel
+        Producer:生产者
+        Consumer:消费者
 
+    Exchange的工作模式：
+        Fanout:广播模式，转发到所有绑定交换机的Queue
+        Direct:类似单播，Routing Key和BindingKey完全匹配
+        Topic:类似组播，转发到符合通配符匹配的Queue
+        Headers:请求头与消息头匹配,才能接受消息
 ### 3. 文件的校验值计算
 
 ### 校验算法类型：

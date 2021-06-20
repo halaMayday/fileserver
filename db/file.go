@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	mydb "filestore-server/db/mysql"
 	"fmt"
+	"log"
 )
 
 //文件上传完成，信息同步到mysql数据库
@@ -60,4 +61,32 @@ func GetFileMeta(filehash string) (*TableFile, error) {
 		return nil, err
 	}
 	return &tFile, nil
+}
+
+//UpdateFileLocation:更新文件的储存地址(例如文件被转移了)
+func UpdateFileLocation(filehash, fileaddr string) bool {
+	sqlStr := "update tbl_file set `file_addr` = ? where `file_sha1` = ? limit 1"
+	stmt, err := mydb.DBConn().Prepare(sqlStr)
+	if err != nil {
+		log.Println("预编译sql失败,err:{}", err.Error())
+		return false
+	}
+
+	defer stmt.Close()
+
+	ret, err := stmt.Exec(fileaddr, filehash)
+
+	if err != nil {
+		log.Println("执行sql:{}失败,err:{}", sqlStr, err.Error())
+		return false
+	}
+
+	if rf, err := ret.RowsAffected(); nil == err {
+		if rf <= 0 {
+			log.Printf("更新文件location失败, filehash:%s", filehash)
+			return false
+		}
+		return true
+	}
+	return false
 }

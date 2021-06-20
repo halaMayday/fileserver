@@ -4,7 +4,6 @@ import (
 	dblayer "filestore-server/db"
 	"filestore-server/util"
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"time"
 )
@@ -16,12 +15,7 @@ const (
 //处理用户注册请求
 func SignupInHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodGet {
-		data, err := ioutil.ReadFile("./static/view/signup.html")
-		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			return
-		}
-		w.Write(data)
+		http.Redirect(w, r, "/static/view/signup.html", http.StatusFound)
 		return
 	}
 	r.ParseForm()
@@ -51,43 +45,48 @@ func SignupInHandler(w http.ResponseWriter, r *http.Request) {
 
 //登录接口
 func SignInHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method == http.MethodGet {
+		http.Redirect(w, r, "/static/view/signup.html", http.StatusFound)
+		return
+	}
 
 	r.ParseForm()
 	username := r.Form.Get("username")
 	password := r.Form.Get("password")
 	encPassword := util.Sha1([]byte(password + pwdSalt))
+
 	//1.校验用户名和密码
 	pwdChecked := dblayer.UserSignin(username, encPassword)
-
 	if !pwdChecked {
 		w.Write([]byte("USERNAME OR PASSWORD FAILED"))
-	} else {
-		//2.生成访问凭证
-		token := GenToken(username)
-		upRes := dblayer.UpdateToken(username, token)
-		if !upRes {
-			w.Write([]byte("FAILED"))
-			return
-		}
-		//3.登录成功后重定向到首页
-		//w.Write([]byte("http://"+r.Host+"/static/view/home.html"))
-		resp := util.RespMsg{
-			Code: 0,
-			Msg:  "OK",
-			Data: struct {
-				Location string
-				Username string
-				Token    string
-			}{
-				Location: "http://" + r.Host + "/static/view/home.html",
-				Username: username,
-				Token:    token,
-			},
-		}
-		w.Write(resp.JSONBytes())
 	}
+	//2.生成访问凭证
+	token := GenToken(username)
+	upRes := dblayer.UpdateToken(username, token)
+	if !upRes {
+		w.Write([]byte("FAILED"))
+		return
+	}
+	//3.登录成功后重定向到首页
+	//w.Write([]byte("http://"+r.Host+"/static/view/home.html"))
+	resp := util.RespMsg{
+		Code: 0,
+		Msg:  "OK",
+		Data: struct {
+			Location string
+			Username string
+			Token    string
+		}{
+			Location: "http://" + r.Host + "/static/view/home.html",
+			Username: username,
+			Token:    token,
+		},
+	}
+	w.Write(resp.JSONBytes())
+
 }
 
+//UserInfoHandler:查询用户信息
 func UserInfoHandler(w http.ResponseWriter, r *http.Request) {
 	//1.解析参数
 	r.ParseForm()
@@ -109,6 +108,7 @@ func UserInfoHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write(resp.JSONBytes())
 }
 
+//GenToken:生成token
 func GenToken(username string) string {
 	//40位字符：md5(username+timestamp+token_salt)+timestamp[:8]
 	ts := fmt.Sprintf("%x", time.Now().Unix())
@@ -116,7 +116,7 @@ func GenToken(username string) string {
 	return tokenPrefix + ts[:8]
 }
 
-//验证有效性
+//IsTokenValid:验证token有效性
 func IsTokenValid(token string, username string) bool {
 	if len(token) < 40 {
 		return false

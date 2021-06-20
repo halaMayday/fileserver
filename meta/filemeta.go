@@ -4,7 +4,6 @@ import (
 	_ "expvar"
 	mydb "filestore-server/db"
 	"sort"
-	_ "sort"
 )
 
 //文件信息结构
