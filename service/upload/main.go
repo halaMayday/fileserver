@@ -1,6 +1,7 @@
 package main
 
 import (
+	cfg "filestore-server/config"
 	"filestore-server/handler"
 	"fmt"
 	"net/http"
@@ -23,12 +24,6 @@ func main() {
 	http.HandleFunc("/file/delete", handler.HTTPInterceptor(handler.FileDeletaHandle))
 	http.HandleFunc("/file/downloadurl", handler.HTTPInterceptor(handler.DownloadHandler))
 
-	// 用户相关接口
-	//http.HandleFunc("/", handler.SignInHandler)
-	http.HandleFunc("/user/signup", handler.HTTPInterceptor(handler.SignupInHandler))
-	http.HandleFunc("/user/signin", handler.HTTPInterceptor(handler.SignInHandler))
-	http.HandleFunc("/user/info", handler.HTTPInterceptor(handler.UserInfoHandler))
-
 	//分块上传接口
 	http.HandleFunc("/file/mpupload/init",
 		handler.HTTPInterceptor(handler.InitalMultipartUploadHandler))
@@ -41,7 +36,15 @@ func main() {
 	http.HandleFunc("/file/mpupload/status",
 		handler.HTTPInterceptor(handler.MultipartUploadStatusHanlder))
 
-	err := http.ListenAndServe(":8080", nil)
+	// 用户相关接口
+	http.HandleFunc("/", handler.SignInHandler)
+	http.HandleFunc("/user/signup", handler.SignupInHandler)
+	http.HandleFunc("/user/signin", handler.SignInHandler)
+	http.HandleFunc("/user/info", handler.HTTPInterceptor(handler.UserInfoHandler))
+
+	fmt.Printf("上传服务启动中，开始监听监听[%s]...\n", cfg.UploadServiceHost)
+
+	err := http.ListenAndServe(cfg.UploadServiceHost, nil)
 
 	if err != nil {
 		fmt.Printf("Failed to start server,err:%s", err.Error())

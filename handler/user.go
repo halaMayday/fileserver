@@ -30,9 +30,7 @@ func SignupInHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	//2.对密码进行加密
-
 	encPassword := util.Sha1([]byte(passwd + pwdSalt))
-
 	suc := dblayer.UserSingUp(username, encPassword)
 
 	if suc {
