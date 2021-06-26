@@ -10,7 +10,7 @@ import (
 
 func main() {
 	//获取bucket
-	bucket := ceph.GetCephBucket("testbucket1")
+	bucket := ceph.GetCephBucket("userfile")
 
 	//创建一个新的bucket(PublicRead 表示所有用户都可以访问这个bucket)
 	err := bucket.PutBucket(s3.PublicRead)

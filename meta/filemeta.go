@@ -37,6 +37,21 @@ func GetFileMeta(fileSha1 string) FileMeta {
 	return fileMetas[fileSha1]
 }
 
+//GetFileMetaDB:从mysql中获取文件元信息
+func GetFileMetaDB(filesha1 string) (*FileMeta, error) {
+	tFile, err := mydb.GetFileMeta(filesha1)
+	if err != nil {
+		return nil, err
+	}
+	fmeta := FileMeta{
+		FileSha1: tFile.FileHash,
+		FileName: tFile.FileName.String,
+		FileSize: tFile.FileSize.Int64,
+		Location: tFile.FileAddr.String,
+	}
+	return &fmeta, nil
+}
+
 //获取批量的文件元信息接口 : 未全部完成
 func GetLastFileMetas(count int) ([]FileMeta, error) {
 	fMetaArray := make([]FileMeta, len(fileMetas))

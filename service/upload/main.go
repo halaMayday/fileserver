@@ -18,11 +18,11 @@ func main() {
 	http.HandleFunc("/file/fastupload", handler.HTTPInterceptor(handler.TryFastUploadHandler))
 
 	http.HandleFunc("/file/upload/suc", handler.HTTPInterceptor(handler.UploadSucHandler))
-	http.HandleFunc("/file/query", handler.HTTPInterceptor(handler.QueryFilehandler))
+	http.HandleFunc("/file/query", handler.HTTPInterceptor(handler.QueryFileHandler))
 	http.HandleFunc("/file/download", handler.HTTPInterceptor(handler.DownloadHandler))
 	http.HandleFunc("/file/update", handler.HTTPInterceptor(handler.FileMetaUpdataHandle))
-	http.HandleFunc("/file/delete", handler.HTTPInterceptor(handler.FileDeletaHandle))
-	http.HandleFunc("/file/downloadurl", handler.HTTPInterceptor(handler.DownloadHandler))
+	http.HandleFunc("/file/delete", handler.HTTPInterceptor(handler.FileDeleteHandle))
+	http.HandleFunc("/file/downloadurl", handler.HTTPInterceptor(handler.DownloadURLHandler))
 
 	//分块上传接口
 	http.HandleFunc("/file/mpupload/init",

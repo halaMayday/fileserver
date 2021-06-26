@@ -57,6 +57,7 @@ func SignInHandler(w http.ResponseWriter, r *http.Request) {
 	pwdChecked := dblayer.UserSignin(username, encPassword)
 	if !pwdChecked {
 		w.Write([]byte("USERNAME OR PASSWORD FAILED"))
+		return
 	}
 	//2.生成访问凭证
 	token := GenToken(username)

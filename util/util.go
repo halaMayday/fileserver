@@ -51,7 +51,7 @@ func FileMD5(file *os.File) string {
 
 func PathExists(path string) (bool, error) {
 	_, err := os.Stat(path)
-	if err == nil {
+	if err != nil {
 		return true, nil
 	}
 	if os.IsNotExist(err) {
