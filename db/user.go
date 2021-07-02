@@ -10,16 +10,17 @@ func UserSingUp(userName string, passWord string) bool {
 	stmt, err := mydb.DBConn().Prepare(
 		"insert ignore into tbl_user(`user_name`,`user_pwd`) values (?,?)")
 
+	defer stmt.Close()
+
 	if err != nil {
-		fmt.Println("Failed to insert,err:", err.Error())
+		fmt.Println("Failed to insert,err:", err)
 		return false
 	}
-	defer stmt.Close()
 
 	ret, err := stmt.Exec(userName, passWord)
 
 	if err != nil {
-		fmt.Println("Failed to insert,err:", err.Error())
+		fmt.Println("Failed to insert,err:", err)
 		return false
 	}
 
@@ -30,6 +31,7 @@ func UserSingUp(userName string, passWord string) bool {
 			fmt.Printf("File with hash:%s has been signup before", userName)
 		}
 	}
+
 	return false
 }
 
