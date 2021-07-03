@@ -57,7 +57,8 @@ func DoUploadHandler(c *gin.Context) {
 
 	fileMeta := meta.FileMeta{
 		FileName: head.Filename,
-		Location: "/tmp/" + head.Filename,
+		//Location: "/tmp/" + head.Filename,
+		Location: "D:\\testUploadFile\\" + head.Filename,
 		UploadAt: time.Now().Format("2006-01-02 15:04:05"),
 	}
 
@@ -90,8 +91,13 @@ func DoUploadHandler(c *gin.Context) {
 			errCode = -5
 			return
 		}
-		cephPath := "/ceph" + fileMeta.FileSha1
-		_ = ceph.PutObject("userfile", cephPath, data)
+		cephPath := "/ceph/" + fileMeta.FileSha1
+		err = ceph.PutObject(cfg.OSSBucket, cephPath, data)
+		if err != nil {
+			log.Println("upload file by ceph error,{}", err.Error())
+			errCode = -6
+			return
+		}
 		fileMeta.Location = cephPath
 	} else if cfg.CurrentStoreType == cmn.StoreOSS {
 		//文件吸入OSS儲存
@@ -101,7 +107,7 @@ func DoUploadHandler(c *gin.Context) {
 			err := oss.Bucket().PutObject(ossPath, newFile)
 			if err != nil {
 				log.Println("upload file by oss error,{}", err.Error())
-				errCode = -6
+				errCode = -7
 				return
 			}
 		} else {

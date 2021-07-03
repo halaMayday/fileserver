@@ -6,5 +6,5 @@ import (
 
 const (
 	//CurrentStoreType:设置当前文件的储存类型
-	CurrentStoreType = cmn.StoreLocal
+	CurrentStoreType = cmn.StoreCeph
 )
