@@ -82,7 +82,12 @@ func DoSigninHandler(c *gin.Context) {
 		c.Status(http.StatusInternalServerError)
 		return
 	}
-	//3.登录成功后重定向到首页
+	//3.TODO:更新用户最后活跃时间
+	updateSuc := dblayer.UpdateUserLastOnLineTime(username)
+	if !updateSuc {
+		log.Println("更新用户最后登录时间失败")
+	}
+	//4.登录成功后重定向到首页
 	resp := util.RespMsg{
 		Code: 0,
 		Msg:  "OK",

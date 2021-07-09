@@ -33,9 +33,9 @@ func UpdataFileMetaDB(fmeta FileMeta) bool {
 }
 
 //通过sha1 获取文件的元信息对象
-func GetFileMeta(fileSha1 string) FileMeta {
-	return fileMetas[fileSha1]
-}
+//func GetFileMeta(fileSha1 string) FileMeta {
+//	return fileMetas[fileSha1]
+//}
 
 //GetFileMetaDB:从mysql中获取文件元信息
 func GetFileMetaDB(filesha1 string) (*FileMeta, error) {

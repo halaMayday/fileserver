@@ -3,6 +3,7 @@ package db
 import (
 	mydb "filestore-server/db/mysql"
 	"fmt"
+	"log"
 )
 
 //用户注册
@@ -58,6 +59,23 @@ func UserSignin(username string, encpwd string) bool {
 		return true
 	}
 	return false
+}
+
+//UpdateUserLastOnLineTime:更新用户最后最后登录时间
+func UpdateUserLastOnLineTime(username string) bool {
+	stmt, err := mydb.DBConn().Prepare(
+		"UPDATE tbl_user T SET T.last_active=NOW() WHERE T.user_name=?")
+	if err != nil {
+		fmt.Println(err.Error())
+		return false
+	}
+	defer stmt.Close()
+	_, err = stmt.Exec(username)
+	if err != nil {
+		log.Println(err.Error())
+		return false
+	}
+	return true
 }
 
 func UpdateToken(username string, token string) bool {

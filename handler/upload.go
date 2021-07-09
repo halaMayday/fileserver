@@ -57,8 +57,7 @@ func DoUploadHandler(c *gin.Context) {
 
 	fileMeta := meta.FileMeta{
 		FileName: head.Filename,
-		//Location: "/tmp/" + head.Filename,
-		Location: "D:\\testUploadFile\\" + head.Filename,
+		Location: cmn.TmpFile + head.Filename,
 		UploadAt: time.Now().Format("2006-01-02 15:04:05"),
 	}
 
@@ -73,7 +72,7 @@ func DoUploadHandler(c *gin.Context) {
 	fileMeta.FileSize, err = io.Copy(newFile, file)
 	if err != nil {
 		log.Printf("Failed to save data into file,  err:%s\n", err.Error())
-		errCode = -4
+		errCode = -3
 		return
 	}
 
@@ -83,55 +82,27 @@ func DoUploadHandler(c *gin.Context) {
 	// 游标重新回到文件头部
 	newFile.Seek(0, 0)
 
+	uploadPath := ""
 	if cfg.CurrentStoreType == cmn.StoreCeph {
-		//文件寫入ceph
-		data, err := ioutil.ReadAll(newFile)
-		if err != nil {
-			log.Println(err.Error())
+		uploadPath = "/ceph/" + fileMeta.FileSha1
+		uploadbyCephSuc := doUploadbyCeph(newFile, uploadPath, fileMeta)
+		if !uploadbyCephSuc {
+			errCode = -4
+			return
+		}
+
+	} else if cfg.CurrentStoreType == cmn.StoreOSS {
+		//文件吸入OSS儲存
+		uploadPath = "oss/" + fileMeta.FileSha1
+
+		uploadByOssSuc := doUploadByOSS(newFile, uploadPath, fileMeta)
+		if !uploadByOssSuc {
 			errCode = -5
 			return
 		}
-		cephPath := "/ceph/" + fileMeta.FileSha1
-		err = ceph.PutObject(cfg.OSSBucket, cephPath, data)
-		if err != nil {
-			log.Println("upload file by ceph error,{}", err.Error())
-			errCode = -6
-			return
-		}
-		fileMeta.Location = cephPath
-	} else if cfg.CurrentStoreType == cmn.StoreOSS {
-		//文件吸入OSS儲存
-		ossPath := "oss/" + fileMeta.FileSha1
-		//判断写入OSS为同步还是异步
-		if !cfg.AsyncTransferEnable {
-			err := oss.Bucket().PutObject(ossPath, newFile)
-			if err != nil {
-				log.Println("upload file by oss error,{}", err.Error())
-				errCode = -7
-				return
-			}
-		} else {
-			//写入转移的异步队列
-			data := mq.TransferData{
-				FileHash:      fileMeta.FileSha1,
-				CurLocation:   fileMeta.Location,
-				DestLocation:  ossPath,
-				DestStoreType: cmn.StoreOSS}
-
-			pubData, _ := json.Marshal(data)
-			pubSuc := mq.Publish(
-				cfg.TransExchangeName,
-				cfg.TransOSSErrQueueName,
-				pubData)
-
-			if !pubSuc {
-				//todo 可以采取一些死信队列的处理方法等等
-				log.Println("当前发送转移信息失败，稍后重试")
-			}
-
-		}
 	}
 
+	fileMeta.Location = uploadPath
 	meta.UpdataFileMetaDB(fileMeta)
 
 	//更新用户文件表记录
@@ -142,6 +113,71 @@ func DoUploadHandler(c *gin.Context) {
 		errCode = -7
 		return
 	}
+}
+
+func doUploadbyCeph(newFile *os.File, path string, fileMeta meta.FileMeta) bool {
+	//如果同步的话就直接上传到ceph
+	if !cfg.AsyncTransferEnable {
+		//文件寫入ceph
+		data, err := ioutil.ReadAll(newFile)
+		if err != nil {
+			log.Println(err.Error())
+			return false
+		}
+		err = ceph.PutObject(cfg.OSSBucket, path, data)
+		if err != nil {
+			log.Println("upload file by CEPH error,{}", err.Error())
+			return false
+		}
+	} else {
+		//如果异步的话，写入转移的异步队列
+		transferDataSuc := doTransferData(fileMeta, path, cmn.StoreCeph)
+		if !transferDataSuc {
+			return false
+		}
+	}
+	return true
+}
+
+func doUploadByOSS(newFile *os.File, path string, fileMeta meta.FileMeta) bool {
+	//如果同步的话就直接上传到ceph
+	if !cfg.AsyncTransferEnable {
+		err := oss.Bucket().PutObject(path, newFile)
+		if err != nil {
+			log.Println("upload file by oss error,{}", err.Error())
+			return false
+
+		}
+	} else {
+		//如果异步的话，写入转移的异步队列
+		transferDataSuc := doTransferData(fileMeta, path, cmn.StoreOSS)
+		if !transferDataSuc {
+			return false
+		}
+	}
+	return true
+}
+
+func doTransferData(fileMeta meta.FileMeta, path string, storeType cmn.StoreType) bool {
+	//写入转移的异步队列
+	data := mq.TransferData{
+		FileHash:      fileMeta.FileSha1,
+		CurLocation:   fileMeta.Location,
+		DestLocation:  path,
+		DestStoreType: storeType}
+
+	pubData, _ := json.Marshal(data)
+	pubSuc := mq.Publish(
+		cfg.TransExchangeName,
+		cfg.TransOSSErrQueueName,
+		pubData)
+
+	if !pubSuc {
+		//todo 可以采取一些死信队列的处理方法等等
+		log.Println("当前发送转移信息失败，稍后重试")
+		return false
+	}
+	return true
 }
 
 //QueryFileHandler:获取文件元信息
@@ -225,19 +261,23 @@ func TryFastUploadHandler(c *gin.Context) {
 //FileMetaUpdataHandle: 更新元文件信息接口(重命名)
 func FileMetaUpdataHandle(c *gin.Context) {
 	opType := c.Request.FormValue("op")
-	fileSha1 := c.Request.FormValue("fileHash")
+	fileSha1 := c.Request.FormValue("filehash")
 	newFileName := c.Request.FormValue("filename")
 
 	if opType != "0" {
 		c.Status(http.StatusForbidden)
 		return
 	}
+	curFileMeta, err := meta.GetFileMetaDB(fileSha1)
+	if err != nil {
+		log.Println(err.Error())
+		c.Status(http.StatusInternalServerError)
+		return
+	}
 
-	curFileMeta := meta.GetFileMeta(fileSha1)
 	curFileMeta.FileName = newFileName
-	meta.UpdataFileMetaDB(curFileMeta)
-
-	data, err := json.Marshal(curFileMeta)
+	meta.UpdataFileMetaDB(*curFileMeta)
+	data, err := json.Marshal(*curFileMeta)
 	if err != nil {
 		log.Println(err.Error())
 		c.Status(http.StatusInternalServerError)
@@ -249,9 +289,10 @@ func FileMetaUpdataHandle(c *gin.Context) {
 //const passwd_salt = "halaMayday"
 
 //文件删除的接口
+//目前只删除了本地文件，云上的文件没有删除。删除云上的文件，应该交给mq.
 func FileDeleteHandle(c *gin.Context) {
 	fileSha1 := c.Request.FormValue("fileHash")
-	fMeta := meta.GetFileMeta(fileSha1)
+	fMeta, err := meta.GetFileMetaDB(fileSha1)
 	//todo:这里可能删除失败
 	os.Remove(fMeta.Location)
 	//删除索引数据
