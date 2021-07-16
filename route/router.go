@@ -11,27 +11,20 @@ func Router() *gin.Engine {
 	//处理静态资源
 	router.Static("/static/", "./static")
 
-	//注册
-	router.GET("/user/signup", handler.SignupInHandler)
-	router.POST("/user/signup", handler.DoSignupHandler)
-	//登录
-	router.GET("/user/signin", handler.SignInHandler)
-	router.POST("/user/signin", handler.DoSigninHandler)
-
 	//加入中间件，用于效验token的拦截器
 	router.Use(handler.HTTPInterceptor())
 
 	//use之后的所有handler都会进去拦截
 
-	//用户信息查询
-	router.GET("/user/info", handler.UserInfoHandler)
+	////用户信息查询
+	//router.GET("/user/info", handler.UserInfoHandler)
 
 	//文件存取接口
 	router.GET("/file/upload", handler.UploadHandler)
 	router.POST("/file/upload", handler.DoUploadHandler)
-	router.GET("/file/query", handler.QueryFileHandler)
+	//router.GET("/file/query", handler.QueryFileHandler)
 	//TODO:功能正常，与前端交互有问题
-	router.POST("/file/update", handler.FileMetaUpdataHandle)
+	//router.POST("/file/update", handler.FileMetaUpdataHandle)
 	//TODO:功能正常，没有前端按钮
 	router.POST("/file/delete", handler.FileDeleteHandle)
 	//尚未测试

@@ -101,5 +101,15 @@ Endpoint：存储服务入口，Web服务入口点的URL。
 
 Bucket：储存桶是S3中储存的基本实体，由对象数据和元数据组成。
 
-Key:健是储存桶中对象的唯一标识符，桶内的每个对象都只能有一个key
+Key:健是储存桶中对象的唯一标识符，桶内的每个对象都只能有一个ke
 
+
+y
+
+
+### go 微服务框架 go-mirco
+
+### 安装使用proto
+安装：
+使用:
+protoc --proto_path=service/account/proto  --go_out=service/account/proto  --micro_out=service/account/proto  service/account/proto/user.proto
