@@ -180,33 +180,6 @@ func doTransferData(fileMeta meta.FileMeta, path string, storeType cmn.StoreType
 	return true
 }
 
-//QueryFileHandler:获取文件元信息
-func QueryFileHandler(c *gin.Context) {
-	username := c.Request.FormValue("username")
-	limitCnt, _ := strconv.Atoi(c.Request.FormValue("limit"))
-	userFiles, err := dblayer.QueryUserFileMetas(username, limitCnt)
-
-	if err != nil {
-		c.JSON(http.StatusInternalServerError,
-			gin.H{
-				"msg":  "query file error",
-				"code": -6,
-			})
-		return
-	}
-	data, err := json.Marshal(userFiles)
-	if err != nil {
-		fmt.Printf("json.Marshal user:%+v\n error:%s", userFiles, err.Error())
-		c.JSON(http.StatusInternalServerError,
-			gin.H{
-				"msg":  "json.Marshal error",
-				"code": -7,
-			})
-		return
-	}
-	c.Data(http.StatusOK, "application/json", data)
-}
-
 //
 func TryFastUploadHandler(c *gin.Context) {
 

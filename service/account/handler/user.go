@@ -81,7 +81,7 @@ func (u *User) Signin(ctx context.Context, req *proto.ReqSignIn, resp *proto.Res
 	return nil
 }
 
-//获取用户信息
+//UserInfo:获取用户信息
 func (u *User) UserInfo(ctx context.Context, req *proto.ReqUserInfo, resp *proto.RespUserInfo) error {
 	username := req.GetUsername()
 	userInfo, err := dblayer.GetUserInfo(username)

@@ -65,6 +65,7 @@ func SignInHandler(c *gin.Context) {
 	c.Redirect(http.StatusFound, "/static/view/signup.html")
 }
 
+//DoSigninHandler:处理用户登录POST请求
 func DoSigninHandler(c *gin.Context) {
 	username := c.Request.FormValue("username")
 	password := c.Request.FormValue("password")
@@ -107,5 +108,27 @@ func DoSigninHandler(c *gin.Context) {
 		},
 	}
 	c.Data(http.StatusOK, "application/json", cliResp.JSONBytes())
+}
 
+//UserInfoHandler:查询用户信息
+func UserInfoHandler(c *gin.Context) {
+	//1.解析参数
+	username := c.Request.FormValue("username")
+	//2.查询用户信息
+	resp, err := userCli.UserInfo(context.TODO(), &go_micro_service_user.ReqUserInfo{
+		Username: username,
+	})
+	if err != nil {
+		log.Println(err.Error())
+		c.Status(http.StatusInternalServerError)
+		return
+	}
+
+	//3.组装并且相应用户数据
+	cliResp := util.RespMsg{
+		Code: 0,
+		Msg:  "OK",
+		Data: resp,
+	}
+	c.Data(http.StatusOK, "application/json", cliResp.JSONBytes())
 }

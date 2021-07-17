@@ -26,30 +26,15 @@
     </select>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="42a9e402-7d66-4782-9233-7e4f3dea339c" name="Default Changelist" comment="fix:修正适配gin框架中的问题">
-      <change afterPath="$PROJECT_DIR$/D:\testUploadFile\hf.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/common/flags.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/config/user.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/consul集群.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/微服务架构版本.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/service/account/handler/user.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/service/account/main.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/service/account/proto/user.pb.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/service/account/proto/user.pb.micro.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/service/account/proto/user.proto" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/service/apigw/handler/auth.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/service/apigw/handler/user.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/service/apigw/main.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/service/apigw/route/route.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/start.sh" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/test/a.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/问题解决.md" afterDir="false" />
+    <list default="true" id="42a9e402-7d66-4782-9233-7e4f3dea339c" name="Default Changelist" comment="fix:服务化改造">
+      <change afterPath="$PROJECT_DIR$/service/account/handler/user_file.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/service/apigw/handler/user_file.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/go.mod" beforeDir="false" afterPath="$PROJECT_DIR$/go.mod" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/go.sum" beforeDir="false" afterPath="$PROJECT_DIR$/go.sum" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/handler/user.go" beforeDir="false" afterPath="$PROJECT_DIR$/handler/user.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/readme.md" beforeDir="false" afterPath="$PROJECT_DIR$/readme.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/route/router.go" beforeDir="false" afterPath="$PROJECT_DIR$/route/router.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/handler/upload.go" beforeDir="false" afterPath="$PROJECT_DIR$/handler/upload.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/service/account/handler/user.go" beforeDir="false" afterPath="$PROJECT_DIR$/service/account/handler/user.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/service/apigw/handler/auth.go" beforeDir="false" afterPath="$PROJECT_DIR$/service/apigw/handler/auth.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/service/apigw/handler/user.go" beforeDir="false" afterPath="$PROJECT_DIR$/service/apigw/handler/user.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/service/apigw/route/route.go" beforeDir="false" afterPath="$PROJECT_DIR$/service/apigw/route/route.go" afterDir="false" />
     </list>
     <list id="5c433eb8-d27c-4159-a38f-8da99639da62" name="feat:add method  query user's files" comment="" />
     <list id="bc98a8c2-7822-4b3a-a186-696d9d88cf37" name="feat:complete single  version" comment="" />
@@ -219,7 +204,8 @@
     <MESSAGE value="feat:complete single  version&#10;&#10;完成了单体架构版本的所有方法。&#10;基本功能已经通过测试。&#10;剩下分块上传和ceph上传尚未测试。&#10;还剩下ceph文件的下载功能" />
     <MESSAGE value="refactor:改用gin框架&#10;&#10;使用gin框架改造项目，完成用户注册，登录，用户信息查询，以及文件上传功能" />
     <MESSAGE value="fix:修正适配gin框架中的问题" />
-    <option name="LAST_COMMIT_MESSAGE" value="fix:修正适配gin框架中的问题" />
+    <MESSAGE value="fix:服务化改造" />
+    <option name="LAST_COMMIT_MESSAGE" value="fix:服务化改造" />
   </component>
   <component name="VgoProject">
     <integration-enabled>true</integration-enabled>
@@ -435,11 +421,11 @@
     </state>
     <state x="2377" y="453" key="VCS.ChangelistChooser/0.0.1920.1080/1920.-370.1080.1920@1920.-370.1080.1920" timestamp="1624712666563" />
     <state x="813" y="463" key="VCS.ChangelistChooser/0.0.1920.1080@0.0.1920.1080" timestamp="1622390073410" />
-    <state x="2418" y="280" key="Vcs.Push.Dialog.v2" timestamp="1625244665791">
+    <state x="2418" y="280" key="Vcs.Push.Dialog.v2" timestamp="1626448851037">
       <screen x="1920" y="0" width="1920" height="1080" />
     </state>
     <state x="2200" y="128" key="Vcs.Push.Dialog.v2/0.0.1920.1080/1920.-370.1080.1920@1920.-370.1080.1920" timestamp="1624712692651" />
-    <state x="2418" y="280" key="Vcs.Push.Dialog.v2/0.0.1920.1080/1920.0.1920.1080@1920.0.1920.1080" timestamp="1625244665791" />
+    <state x="2418" y="280" key="Vcs.Push.Dialog.v2/0.0.1920.1080/1920.0.1920.1080@1920.0.1920.1080" timestamp="1626448851037" />
     <state x="560" y="280" key="Vcs.Push.Dialog.v2/0.0.1920.1080@0.0.1920.1080" timestamp="1622390701240" />
     <state width="960" height="540" key="XDebugger.FullValuePopup" timestamp="1625843244022">
       <screen x="1920" y="0" width="1920" height="1080" />
@@ -474,7 +460,7 @@
       <breakpoints>
         <line-breakpoint enabled="true" type="DlvLineBreakpoint">
           <url>file://$PROJECT_DIR$/handler/user.go</url>
-          <line>33</line>
+          <line>36</line>
           <option name="timeStamp" value="93" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="DlvLineBreakpoint">
@@ -499,7 +485,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="DlvLineBreakpoint">
           <url>file://$PROJECT_DIR$/handler/upload.go</url>
-          <line>262</line>
+          <line>237</line>
           <option name="timeStamp" value="119" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="DlvLineBreakpoint">
@@ -514,7 +500,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="DlvLineBreakpoint">
           <url>file://$PROJECT_DIR$/service/apigw/handler/user.go</url>
-          <line>47</line>
+          <line>35</line>
           <option name="timeStamp" value="127" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="javascript">

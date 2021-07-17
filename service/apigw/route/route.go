@@ -20,7 +20,7 @@ func Router() *gin.Engine {
 
 	router.Use(handler.Authorize())
 
-	// 用户查询
+	// 用户查询 TODO:POST请求是否正确
 	router.POST("/user/info", handler.UserInfoHandler)
 
 	// 用户文件查询
