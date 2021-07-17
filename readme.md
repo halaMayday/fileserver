@@ -113,3 +113,4 @@ y
 安装：
 使用:
 protoc --proto_path=service/account/proto  --go_out=service/account/proto  --micro_out=service/account/proto  service/account/proto/user.proto
+protoc --proto_path=service/dbproxy/proto --go_out=service/dbproxy/proto --micro_out=service/dbproxy/proto  service/dbproxy/proto/dbproxy.proto
