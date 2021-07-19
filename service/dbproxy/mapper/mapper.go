@@ -2,10 +2,12 @@ package mapper
 
 import (
 	"errors"
+	"filestore-server/service/dbproxy/orm"
 	"reflect"
 )
 
 var funcs = map[string]interface{}{
+
 	"/file/OnFileUploadFinished": orm.OnFileUploadFinished,
 	"/file/GetFileMeta":          orm.GetFileMeta,
 	"/file/GetFileMetaList":      orm.GetFileMetaList,
@@ -33,7 +35,7 @@ func FuncCall(name string, params ...interface{}) (result []reflect.Value, err e
 	//通过反射可以动态调用对象的导出方法
 	f := reflect.ValueOf(funcs[name])
 	if len(params) != f.Type().NumIn() {
-		err = errors.New("传入参数数量与被调用方法要求的数量不一致.")
+		err = errors.New("传入参数数量与被调用方法要求的数量不一致")
 		return
 	}
 

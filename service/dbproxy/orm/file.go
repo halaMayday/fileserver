@@ -2,12 +2,12 @@ package orm
 
 import (
 	"database/sql"
-	mydb "filestore-server/db/mysql"
+	mydb "filestore-server/service/dbproxy/conn"
 	"log"
 )
 
 //OnFileUploadFinshed:文件上传完成，信息同步到mysql数据库
-func OnFileUploadFinshed(filehash string, filename string,
+func OnFileUploadFinished(filehash string, filename string,
 	filesize int64, fileaddr string) (res ExecResult) {
 	//sql脚本预编译
 	stmt, err := mydb.DBConn().Prepare(
