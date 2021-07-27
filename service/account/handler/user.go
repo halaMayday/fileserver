@@ -4,12 +4,10 @@ import (
 	"context"
 	"filestore-server/common"
 	"filestore-server/config"
-	dblayer "filestore-server/db"
 	proto "filestore-server/service/account/proto"
+	dbcli "filestore-server/service/dbproxy/client"
 	"filestore-server/util"
 	"fmt"
-	"log"
-	"strconv"
 	"time"
 )
 
@@ -37,13 +35,11 @@ func (u *User) Signup(ctx context.Context, req *proto.ReqSignUp, resp *proto.Res
 
 	//2.对密码进行加密
 	encPassword := util.Sha1([]byte(password + config.PasswordSalt))
-	suc := dblayer.UserSingUp(username, encPassword)
-
-	if suc {
+	dbResp, err := dbcli.UserSignUp(username, encPassword)
+	if err == nil && dbResp.Suc {
 		resp.Code = common.StatusOK
 		resp.Message = "注册成功"
 	} else {
-		log.Println("注册失败")
 		resp.Code = common.StatusRegisterFailed
 		resp.Message = "注册失败"
 	}
@@ -56,22 +52,23 @@ func (u *User) Signin(ctx context.Context, req *proto.ReqSignIn, resp *proto.Res
 	password := req.Password
 
 	//1.效验用户名和密码
-	pwdChecked := dblayer.UserSignin(username, password)
-	if !pwdChecked {
+	dbResp, err := dbcli.UserSignin(username, password)
+
+	if err != nil || !dbResp.Suc {
 		resp.Code = common.StatusLoginFailed
 		return nil
 	}
 
 	//2.生成访问凭证
 	token := GenToken(username)
-	upRes := dblayer.UpdateToken(username, token)
-	if !upRes {
+	upResp, err := dbcli.UpdateToken(username, token)
+	if err != nil || !upResp.Suc {
 		resp.Code = common.StatusServerError
 		return nil
 	}
 	//3.更新用户最后活跃时间
-	updateSuc := dblayer.UpdateUserLastOnLineTime(username)
-	if !updateSuc {
+	upTimeResp, err := dbcli.UpdateUserLastOnLineTime(username)
+	if err != nil || !upTimeResp.Suc {
 		resp.Code = common.StatusServerError
 		return nil
 	}
@@ -84,25 +81,25 @@ func (u *User) Signin(ctx context.Context, req *proto.ReqSignIn, resp *proto.Res
 //UserInfo:获取用户信息
 func (u *User) UserInfo(ctx context.Context, req *proto.ReqUserInfo, resp *proto.RespUserInfo) error {
 	username := req.GetUsername()
-	userInfo, err := dblayer.GetUserInfo(username)
+	userResp, err := dbcli.GetUserInfo(username)
 	if err != nil {
 		resp.Code = common.StatusServerError
 		resp.Message = "服务错误"
 		return nil
 	}
+	if !userResp.Suc {
+		resp.Code = common.StatusUserNotExists
+		resp.Message = "用户不存在"
+		return nil
+	}
+	userInfo := dbcli.ToTableUser(userResp.Data)
 
 	//相应组装参数
 	resp.Code = common.StatusOK
 	resp.Username = userInfo.Username
 	resp.SignupAt = userInfo.SignupAt
 	resp.LastActiveAt = userInfo.LastActiveAt
-	userStatus, err := strconv.ParseInt(userInfo.Status, 10, 32)
-	if err != nil {
-		resp.Code = common.StatusServerError
-		resp.Message = "服务错误"
-		return nil
-	}
-	resp.Status = int32(userStatus)
+	resp.Status = int32(userInfo.Status)
 	//todo:需要增加接口，完善用户信息（email/phone等）
 	resp.Email = userInfo.Email
 	resp.Phone = userInfo.Phone

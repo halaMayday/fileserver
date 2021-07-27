@@ -137,3 +137,22 @@ func UserExist(username string) (res ExecResult) {
 	}
 	return
 }
+
+//UpdateUserLastOnLineTime:更新用户最后最后登录时间
+func UpdateUserLastOnLineTime(username string) (res ExecResult) {
+	stmt, err := mydb.DBConn().Prepare(
+		"UPDATE tbl_user T SET T.last_active=NOW() WHERE T.user_name=?")
+	if err != nil {
+		log.Println(err.Error())
+		res.Suc = false
+		return
+	}
+	defer stmt.Close()
+	_, err = stmt.Exec(username)
+	if err != nil {
+		log.Println(err.Error())
+		res.Suc = false
+		return
+	}
+	return
+}

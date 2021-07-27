@@ -6,6 +6,7 @@ import (
 	"filestore-server/service/dbproxy/orm"
 	dbProto "filestore-server/service/dbproxy/proto"
 	"github.com/micro/go-micro"
+	"github.com/mitchellh/mapstructure"
 )
 
 //文件信息结构
@@ -50,4 +51,88 @@ func parseBody(resp *dbProto.RespExec) *orm.ExecResult {
 		return &resList[0]
 	}
 	return nil
+}
+
+func ToTableUser(src interface{}) orm.TableUser {
+	user := orm.TableUser{}
+	mapstructure.Decode(src, &user)
+	return user
+}
+
+func ToTableFile(src interface{}) orm.TableFile {
+	file := orm.TableFile{}
+	mapstructure.Decode(src, &file)
+	return file
+}
+
+func ToTableFiles(src interface{}) []orm.TableFile {
+	files := []orm.TableFile{}
+	mapstructure.Decode(src, &files)
+	return files
+}
+
+func ToTableUserFile(src interface{}) orm.TableUserFile {
+	ufile := orm.TableUserFile{}
+	mapstructure.Decode(src, &ufile)
+	return ufile
+}
+
+func ToTableUserFiles(src interface{}) []orm.TableUserFile {
+	ufile := []orm.TableUserFile{}
+	mapstructure.Decode(src, &ufile)
+	return ufile
+}
+
+//UserSignUp:用户注册
+func UserSignUp(username, encPassword string) (*orm.ExecResult, error) {
+	userInfo, _ := json.Marshal([]interface{}{username, encPassword})
+	resp, err := execAction("/user/Signup", userInfo)
+	return parseBody(resp), err
+}
+
+//UserSignin:用户登录
+func UserSignin(username, encPassword string) (*orm.ExecResult, error) {
+	userInfo, _ := json.Marshal([]interface{}{username, encPassword})
+	resp, err := execAction("/user/Signin", userInfo)
+	return parseBody(resp), err
+}
+
+//UpdateToken：更新用户token
+func UpdateToken(username, token string) (*orm.ExecResult, error) {
+	userInfo, _ := json.Marshal([]interface{}{username, token})
+	resp, err := execAction("/user/UpdateToken", userInfo)
+	return parseBody(resp), err
+}
+
+//UpdateUserLastOnLineTime：更新最后在线时间
+func UpdateUserLastOnLineTime(username string) (*orm.ExecResult, error) {
+	userInfo, _ := json.Marshal([]interface{}{username, username})
+	resp, err := execAction("/user/UpdateOnLineTime", userInfo)
+	return parseBody(resp), err
+}
+
+//GetUserInfo：获取用户信息
+func GetUserInfo(username string) (*orm.ExecResult, error) {
+	userInfo, _ := json.Marshal([]interface{}{username, username})
+	resp, err := execAction("/user/GetUserInfo", userInfo)
+	return parseBody(resp), err
+}
+
+//QueryUserFileMetas：查询用户
+func QueryUserFileMeta(username, filehash string) (*orm.ExecResult, error) {
+	userFileInfo, _ := json.Marshal([]interface{}{username, filehash})
+	resp, err := execAction("/ufile/QueryUserFileMeta", userFileInfo)
+	return parseBody(resp), err
+}
+
+func QueryUserFileMetas(username string, limit int) (*orm.ExecResult, error) {
+	uInfo, _ := json.Marshal([]interface{}{username, limit})
+	res, err := execAction("/ufile/QueryUserFileMetas", uInfo)
+	return parseBody(res), err
+}
+
+func RenameFileName(username, filehash, filename string) (*orm.ExecResult, error) {
+	uInfo, _ := json.Marshal([]interface{}{username, filehash, filename})
+	res, err := execAction("/ufile/RenameFileName", uInfo)
+	return parseBody(res), err
 }
