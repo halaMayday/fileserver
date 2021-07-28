@@ -12,7 +12,7 @@ import (
 type DBProxy struct{}
 
 //ExecuteAction:请求执行SQL函数
-func ExecuteAction(ctx context.Context, req *dbProxy.ReqExec, resp *dbProxy.RespExec) error {
+func (db *DBProxy) ExecuteAction(ctx context.Context, req *dbProxy.ReqExec, resp *dbProxy.RespExec) error {
 	resList := make([]orm.ExecResult, len(req.Action))
 
 	//TODO:檢查 req.Sequence req.transaction兩個參數，執行不同的流程

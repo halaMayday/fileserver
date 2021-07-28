@@ -136,3 +136,18 @@ func RenameFileName(username, filehash, filename string) (*orm.ExecResult, error
 	res, err := execAction("/ufile/RenameFileName", uInfo)
 	return parseBody(res), err
 }
+
+// OnFileUploadFinished : 新增/更新文件元信息到mysql中
+func OnFileUploadFinished(fmeta FileMeta) (*orm.ExecResult, error) {
+	uInfo, _ := json.Marshal([]interface{}{fmeta.FileSha1, fmeta.FileName, fmeta.FileSize, fmeta.Location})
+	res, err := execAction("/file/OnFileUploadFinished", uInfo)
+	return parseBody(res), err
+}
+
+// OnUserFileUploadFinished : 新增/更新文件元信息到mysql中
+func OnUserFileUploadFinished(username string, fmeta FileMeta) (*orm.ExecResult, error) {
+	uInfo, _ := json.Marshal([]interface{}{username, fmeta.FileSha1,
+		fmeta.FileName, fmeta.FileSize})
+	res, err := execAction("/ufile/OnUserFileUploadFinished", uInfo)
+	return parseBody(res), err
+}
