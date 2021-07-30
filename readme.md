@@ -115,3 +115,4 @@ y
 protoc --proto_path=service/account/proto  --go_out=service/account/proto  --micro_out=service/account/proto  service/account/proto/user.proto
 protoc --proto_path=service/dbproxy/proto --go_out=service/dbproxy/proto --micro_out=service/dbproxy/proto  service/dbproxy/proto/dbproxy.proto
 protoc --proto_path=service/upload/proto --go_out=service/upload/proto --micro_out=service/upload/proto  service/upload/proto/upload.proto
+protoc --proto_path=service/download/proto --go_out=service/download/proto --micro_out=service/download/proto  service/download/proto/download.proto

@@ -3,20 +3,28 @@ package api
 import (
 	"bytes"
 	"encoding/json"
+	redisPool "filestore-server/cache/redis"
 	cmn "filestore-server/common"
 	cfg "filestore-server/config"
+	dblayer "filestore-server/db"
 	"filestore-server/meta"
 	"filestore-server/mq"
 	dbcli "filestore-server/service/dbproxy/client"
+	"filestore-server/service/dbproxy/orm"
 	"filestore-server/store/ceph"
 	"filestore-server/store/oss"
 	"filestore-server/util"
+	"github.com/garyburd/redigo/redis"
 	"github.com/gin-gonic/gin"
 	"io"
 	"io/ioutil"
 	"log"
+	"math"
 	"net/http"
 	"os"
+	"path"
+	"strconv"
+	"strings"
 	"time"
 )
 
@@ -189,4 +197,49 @@ func doTransferData(fileMeta meta.FileMeta, path string, storeType cmn.StoreType
 		return false
 	}
 	return true
+}
+
+//TryFastUploadHandler:尝试快传接口
+func TryFastUploadHandler(c *gin.Context) {
+
+	//1.解析参数
+	username := c.Request.FormValue("username")
+	filehash := c.Request.FormValue("filehash")
+	filename := c.Request.FormValue("filename")
+	//2.从文件表中查询相同的hash的文件记录
+	fileMetaResp, err := dbcli.GetFileMeta(filehash)
+	if err != nil {
+		log.Println("action:{},hava a error:{]", "TryFastUploadHandler", err)
+		c.Status(http.StatusInternalServerError)
+		return
+	}
+	//3.查不到记录则返回秒传失败
+	if !fileMetaResp.Suc {
+		resp := util.RespMsg{
+			Code: -1,
+			Msg:  "秒传失败，请访问普通接口",
+		}
+		c.Data(http.StatusOK, "applicaiton/json", resp.JSONBytes())
+		return
+	}
+	//4.上传过则将文件信息写入用户文件表，返回成功
+	fileMeta := dbcli.TableFileToFileMeta(fileMetaResp.Data.(orm.TableFile))
+	fileMeta.FileName = filename
+	upResp, err := dbcli.OnUserFileUploadFinished(username, fileMeta)
+
+	if err == nil && upResp.Suc {
+		resp := util.RespMsg{
+			Code: 0,
+			Msg:  "秒传成功",
+		}
+		c.Data(http.StatusOK, "applicaiton/json", resp.JSONBytes())
+		return
+	} else {
+		resp := util.RespMsg{
+			Code: -2,
+			Msg:  "秒传失败，请稍后再试",
+		}
+		c.Data(http.StatusOK, "applicaiton/json", resp.JSONBytes())
+		return
+	}
 }

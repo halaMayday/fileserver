@@ -3,15 +3,12 @@ package main
 import (
 	"filestore-server/service/account/handler"
 	proto "filestore-server/service/account/proto"
+	"github.com/micro/go-micro"
 	"github.com/micro/go-micro/registry"
+	_ "github.com/micro/go-micro/registry"
 	"github.com/micro/go-plugins/registry/consul"
 	"log"
 	"time"
-
-	_ "github.com/micro/go-micro/service"
-
-	"github.com/micro/go-micro"
-	_ "github.com/micro/go-micro/registry"
 )
 
 func main() {

@@ -53,6 +53,15 @@ func parseBody(resp *dbProto.RespExec) *orm.ExecResult {
 	return nil
 }
 
+func TableFileToFileMeta(tfile orm.TableFile) FileMeta {
+	return FileMeta{
+		FileSha1: tfile.FileHash,
+		FileName: tfile.FileName.String,
+		FileSize: tfile.FileSize.Int64,
+		Location: tfile.FileAddr.String,
+	}
+}
+
 func ToTableUser(src interface{}) orm.TableUser {
 	user := orm.TableUser{}
 	mapstructure.Decode(src, &user)
@@ -149,5 +158,19 @@ func OnUserFileUploadFinished(username string, fmeta FileMeta) (*orm.ExecResult,
 	uInfo, _ := json.Marshal([]interface{}{username, fmeta.FileSha1,
 		fmeta.FileName, fmeta.FileSize})
 	res, err := execAction("/ufile/OnUserFileUploadFinished", uInfo)
+	return parseBody(res), err
+}
+
+//GetFileMeta 获取文件信息
+func GetFileMeta(filehash string) (*orm.ExecResult, error) {
+	uInfo, _ := json.Marshal([]interface{}{filehash})
+	res, err := execAction("/file/GetFileMeta", uInfo)
+	return parseBody(res), err
+}
+
+//UpdateFileLocation:
+func UpdateFileLocation(filehash, fileaddr string) (*orm.ExecResult, error) {
+	uInfo, _ := json.Marshal([]interface{}{filehash, fileaddr})
+	res, err := execAction("/file/UpdateFileLocation", uInfo)
 	return parseBody(res), err
 }

@@ -25,13 +25,13 @@ func Router() *gin.Engine {
 
 	// 文件上传相关接口
 	router.POST("/file/upload", api.DoUploadHandler)
-	//// 秒传接口
-	//router.POST("/file/fastupload", api.TryFastUploadHandler)
-	//
-	//// 分块上传接口
-	//router.POST("/file/mpupload/init", api.InitialMultipartUploadHandler)
-	//router.POST("/file/mpupload/uppart", api.UploadPartHandler)
-	//router.POST("/file/mpupload/complete", api.CompleteUploadHandler)
+	// 秒传接口
+	router.POST("/file/fastupload", api.TryFastUploadHandler)
+
+	// 分块上传接口
+	router.POST("/file/mpupload/init", api.InitalMultipartUploadHandler)
+	router.POST("/file/mpupload/uppart", api.UploadPartHandler)
+	router.POST("/file/mpupload/complete", api.CompleteUploadHandler)
 
 	return router
 }

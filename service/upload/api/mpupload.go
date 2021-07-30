@@ -1,10 +1,15 @@
-package handler
+package api
 
 import (
-	redisPool "filestore-server/cache/redis"
+	cfg "filestore-server/config"
 	dblayer "filestore-server/db"
+	redisPool "filestore-server/cache/redis"
+	dbcli "filestore-server/service/dbproxy/client"
+	"filestore-server/util"
 	"fmt"
+	"github.com/garyburd/redigo/redis"
 	"github.com/gin-gonic/gin"
+	"log"
 	"math"
 	"net/http"
 	"os"
@@ -12,8 +17,6 @@ import (
 	"strconv"
 	"strings"
 	"time"
-
-	"github.com/garyburd/redigo/redis"
 )
 
 //MultipartUploadInfo:初始化信息
@@ -70,12 +73,9 @@ func InitalMultipartUploadHandler(c *gin.Context) {
 		})
 }
 
-//上传文件分块
+//UploadPartHandler:上传文件分块
 func UploadPartHandler(c *gin.Context) {
 	//1.解析用户请求
-
-	// username := r.Form.Get("username")
-
 	uploadID := c.Request.FormValue("uploadid")
 	chunkIndex := c.Request.FormValue("index")
 
@@ -85,7 +85,7 @@ func UploadPartHandler(c *gin.Context) {
 
 	//3.获得文件句柄，用于储存分块内容
 	//先创建目录，再创建文件
-	filePath := "/data/" + uploadID + "/" + chunkIndex
+	filePath := cfg.TempLocalRootDir + uploadID + "/" + chunkIndex
 	os.MkdirAll(path.Dir(filePath), 0744)
 	file, err := os.Create(filePath)
 	if err != nil {
@@ -122,77 +122,103 @@ func UploadPartHandler(c *gin.Context) {
 		})
 }
 
-//CompleteUploadHandler:合并上传功能
+//CompleteUploadHandler:合并上传通知
 func CompleteUploadHandler(c *gin.Context) {
 	//1.解析请求参数
 	upid := c.Request.FormValue("upid")
 	username := c.Request.FormValue("username")
 	filehash := c.Request.FormValue("filehash")
 	filename := c.Request.FormValue("filename")
-	filesize, err := strconv.Atoi(c.Request.FormValue("filesize"))
+	filesize := c.Request.FormValue("filesize")
 
+	//2.获得redis链接池中的一个链接
+	redisConn := redisPool.RedisPool().Get()
+	defer redisConn.Close()
+
+	//3.通过uploadid 查询redis并判断是否所有分块上传完成
+	data, err := redis.Values(redisConn.Do("HGETALL", "MP+"+upid))
 	if err != nil {
 		c.JSON(
 			http.StatusOK,
 			gin.H{
 				"code": -1,
-				"msg":  "params invalid",
+				"msg":  "complete upload failed",
 				"data": nil,
 			})
 		return
+	}
+	totalCount := 0
+	chunkCount := 0
 
-		//2.获得redis链接池中的一个链接
-		redisConn := redisPool.RedisPool().Get()
-		defer redisConn.Close()
-		//3.通过uploadid 查询redis并判断是否所有分块上传完成
-		data, err := redis.Values(redisConn.Do("HGETALL", "MP+"+upid))
-		if err != nil {
-			c.JSON(
-				http.StatusOK,
-				gin.H{
-					"code": -1,
-					"msg":  "complete upload failed",
-					"data": nil,
-				})
-			return
+	for i := 0; i <= len(data); i += 2 {
+		key := string(data[i].([]byte))
+		value := string(data[i+1].([]byte))
+		if key == "chunkcount" {
+			totalCount, _ = strconv.Atoi(value)
+		} else if strings.HasPrefix(key, "chunkIndex_") && value == "1" {
+			chunkCount++
 		}
-		totalCount := 0
-		chunkCount := 0
-
-		for i := 0; i <= len(data); i += 2 {
-			key := string(data[i].([]byte))
-			value := string(data[i+1].([]byte))
-			if key == "chunkcount" {
-				totalCount, _ = strconv.Atoi(value)
-			} else if strings.HasPrefix(key, "chunkIndex_") && value == "1" {
-				chunkCount++
-			}
-		}
-		if totalCount != chunkCount {
-			c.JSON(
-				http.StatusOK,
-				gin.H{
-					"code": -2,
-					"msg":  "分块不完整",
-					"data": nil,
-				})
-			return
-		}
-		// 4. TODO：合并分块, 可以将ceph当临时存储，合并时将文件写入ceph;
-		// 也可以不用在本地进行合并，转移的时候将分块append到ceph/oss即可
-
-		//5.更新唯一文件表和用户文件表
-		dblayer.OnFileUploadFinshed(filehash, filename, int64(filesize), "")
-		dblayer.OnUserFileUploadFinished(username, filehash, filename, int64(filesize))
-		//6.响应处理结果
+	}
+	if totalCount != chunkCount {
 		c.JSON(
 			http.StatusOK,
 			gin.H{
-				"code": 0,
-				"msg":  "OK",
+				"code": -2,
+				"msg":  "分块不完整",
+				"data": nil,
+			})
+		return
+	}
+
+	// 4. TODO：合并分块, 可以将ceph当临时存储，合并时将文件写入ceph;
+	// 也可以不用在本地进行合并，转移的时候将分块append到ceph/oss即可
+	srcPath := cfg.TempPartRootDir + upid + "/"
+	destPath := cfg.TempLocalRootDir + filehash
+	cmd := fmt.Sprintf("cd %s && ls | sort -n | xargs cat > %s", srcPath, destPath)
+	mergeResp, err := util.ExecLinuxShell(cmd)
+	if err != nil {
+		log.Println(err)
+		c.JSON(
+			http.StatusOK,
+			gin.H{
+				"code": -2,
+				"msg":  "合并失败",
 				"data": nil,
 			})
 	}
+	log.Println(mergeResp)
+
+	//5.更新唯一文件表和用户文件表
+	fSize, _ := strconv.Atoi(filesize)
+	fmeta := dbcli.FileMeta{
+		FileSha1: filehash,
+		FileName: username,
+		FileSize: int64(fSize),
+		Location: destPath,
+	}
+
+	_, ferr := dbcli.OnFileUploadFinished(fmeta)
+	_, uferr := dbcli.OnUserFileUploadFinished(username, fmeta)
+	if ferr != nil || uferr != nil {
+		log.Println(err)
+		c.JSON(
+			http.StatusOK,
+			gin.H{
+				"code": -2,
+				"msg":  "数据更新失败",
+				"data": nil,
+			})
+		return
+	}
+	//6.响应处理结果
+	c.JSON(
+		http.StatusOK,
+		gin.H{
+			"code": 0,
+			"msg":  "OK",
+			"data": nil,
+		})
+
 }
 
 //TODO:取消上传分块
